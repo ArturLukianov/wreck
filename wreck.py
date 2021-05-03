@@ -6,6 +6,9 @@ from datetime import datetime
 import time
 import colorama
 import sublist3r
+import requests
+from screenshot import Screenshot
+from PyQt5.QtWidgets import QApplication
 
 
 # Check if we are running this on windows platform
@@ -49,17 +52,20 @@ def banner():
     """ % (G, R, W))
     
 
+
 def prepare_working_directory(working_directory):
     os.mkdir(working_directory)
 
     
-def find_subdomains(domain, output_file, enable_bruteforce=False):
+def find_subdomains(domain, output_file, enable_bruteforce=True):
     subdomains = sublist3r.main(domain, 12, output_file, ports=None, verbose=False, enable_bruteforce=enable_bruteforce, engines=None, silent=True)
     return subdomains
 
 
 if __name__ == "__main__":
-    targets = []
+    targets = set()
+    target_urls = set()
+    screenshots = dict()
 
     banner()
     
@@ -73,18 +79,71 @@ if __name__ == "__main__":
                                      'output-%s' % (datetime.today().strftime('%Y-%m-%d-%s'),))
 
     print('%s[+]%s Created working directory: %s%s%s' %
-          (G, W, Y, working_directory, Y))
+          (G, W, Y, working_directory, W))
 
     prepare_working_directory(working_directory)
 
     if 'domain' in args:
         print('%s[!] %sPrimary target: %s%s%s' % (B, W, Y, args.domain, W))
-        targets.append(args.domain)
+        targets.add(args.domain)
         
         print('%s[!] %sLooking for subdomains...' % (B, W))
         subdomains_file = os.path.join(working_directory,
                                        'subdomains-sublist3r.txt')
-        targets += find_subdomains(args.domain, subdomains_file)
+        targets |= set(find_subdomains(args.domain, subdomains_file))
     else:
         print('%s[!] %sTarget: %s%s%s' % (B, W, Y, args.ip, W))
-        targets.append(args.ip)
+        targets.add(args.ip)
+
+    print('%s[+] %sTarget discovery finished' % (G, W))
+    print('%s[!] %sDetecting web sites' % (B, W))
+    for address in targets:
+        http_url = 'http://' + address
+        try:
+            response = requests.get(http_url, allow_redirects=False)
+        except requests.exceptions.ConnectionError:
+            continue
+        
+        if response.status_code == 301:
+            target_urls.add(response.headers['Location'])
+        elif response.status_code == 200:
+            target_urls.add(http_url)
+
+        https_url = 'https://' + address
+        try:
+            response = requests.get(https_url, allow_redirects=False)
+        except requests.exceptions.ConnectionError:
+            continue
+        
+        if response.status_code == 301:
+            target_urls.add(response.headers['Location'])
+        elif response.status_code == 200:
+            target_urls.add(https_url)
+
+    for i, url in enumerate(target_urls):
+        if i == 0:
+            print('%s[+] %sFound: %s%s%s' % (G, W, Y, url, W))
+        else:
+            print('           %s%s%s' % (Y, url, W))
+
+    print('%s[!] %sTaking screenshots of index pages' % (B, W))
+
+    url_file_pairs = []
+    
+    for url in target_urls:
+        output_file = os.path.join(working_directory,
+                                   'screenshot-' +
+                                   ''.join([i for i in url if i.isalpha()]) + '.png')
+        url_file_pairs.append((url, output_file))
+        
+    app = QApplication([])
+    s = Screenshot()
+    s.app = app    
+    s.capture(url_file_pairs)
+
+    app.exec_()
+
+    print('%s[+] %sScreenshots saved' % (G, W))
+
+
+
