@@ -57,7 +57,7 @@ def prepare_working_directory(working_directory):
     os.mkdir(working_directory)
 
     
-def find_subdomains(domain, output_file, enable_bruteforce=True):
+def find_subdomains(domain, output_file, enable_bruteforce=False):
     subdomains = sublist3r.main(domain, 12, output_file, ports=None, verbose=False, enable_bruteforce=enable_bruteforce, engines=None, silent=True)
     return subdomains
 
