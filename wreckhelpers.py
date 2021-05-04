@@ -1,2 +1,2 @@
-def alphize(s):
-    return ''.join([i for i in s if i.isalpha()])
+def url_to_screenshot_name(s):
+    return ''.join([i if i.isalpha() else '_' for i in s]) + '.png'

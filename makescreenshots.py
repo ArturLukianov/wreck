@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt, QUrl, QTimer, QSize
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 import time
-from wreckhelpers import alphize
+from wreckhelpers import url_to_screenshot_name
 
 
 class Screenshot(QWebEngineView):
@@ -42,7 +42,7 @@ def make_screenshots(urls, output_dir):
     
     url_file_pairs = []
     for url in urls:
-        url_file_pairs.append((url, os.path.join(output_dir, alphize(url) + '.png')))
+        url_file_pairs.append((url, os.path.join(output_dir, url_to_screenshot_name(url))))
 
     app = QApplication([])
     s = Screenshot()

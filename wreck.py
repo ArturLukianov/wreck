@@ -8,6 +8,7 @@ import colorama
 from makescreenshots import make_screenshots
 from findwebpages import find_web_pages
 from findsubdomains import find_subdomains
+from generatehtmlreport import generate_html_report
 
 
 # Check if we are running this on windows platform
@@ -114,5 +115,10 @@ if __name__ == "__main__":
 
     print('%s[+] %sScreenshots saved' % (G, W))
 
-
+    print('%s[!] %sGenerating HTML report' % (B, W))
+    
+    html_dir = os.path.join(working_directory, 'html')
+    print('%s[!] %sHTML report will be saved in %s%s%s' % (B, W, Y, html_dir, W))
+    generate_html_report('Wreck report', html_dir, target_urls)
+    print('%s[+] %sFinished!' % (G, W))
 
