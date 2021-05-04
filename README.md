@@ -12,7 +12,7 @@ wreck uses third-party tools to gather info and generates output in several form
  - [ ] Try to identify technologies used
  - [ ] Crawl web sites
  - [ ] Generate links graph
- - [ ] Generate HTML output
+ - [x] Generate HTML output
 
 ## Installation
 ```bash
