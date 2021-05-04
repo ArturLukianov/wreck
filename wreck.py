@@ -5,10 +5,9 @@ import argparse
 from datetime import datetime
 import time
 import colorama
-import sublist3r
-import requests
-from screenshot import Screenshot
-from PyQt5.QtWidgets import QApplication
+from makescreenshots import make_screenshots
+from findwebpages import find_web_pages
+from findsubdomains import find_subdomains
 
 
 # Check if we are running this on windows platform
@@ -50,16 +49,12 @@ def banner():
                 └┴┘┴└─└─┘└─┘┴ ┴%s
                by @ArturLukianov%s
     """ % (G, R, W))
-    
+
 
 
 def prepare_working_directory(working_directory):
     os.mkdir(working_directory)
 
-    
-def find_subdomains(domain, output_file, enable_bruteforce=False):
-    subdomains = sublist3r.main(domain, 12, output_file, ports=None, verbose=False, enable_bruteforce=enable_bruteforce, engines=None, silent=True)
-    return subdomains
 
 
 if __name__ == "__main__":
@@ -73,7 +68,10 @@ if __name__ == "__main__":
     target_me_group = parser.add_mutually_exclusive_group(required=True)
     target_me_group.add_argument('--domain', dest='domain')
     target_me_group.add_argument('--ip', dest='ip')
+    parser.add_argument('--subbrute', dest='subbrute', action='store_true', help='Preform subdomain bruteforce')
     args = parser.parse_args()
+
+    subbrute = args.subbrute
 
     working_directory = os.path.join(os.path.abspath(os.getcwd()),
                                      'output-%s' % (datetime.today().strftime('%Y-%m-%d-%s'),))
@@ -90,36 +88,16 @@ if __name__ == "__main__":
         print('%s[!] %sLooking for subdomains...' % (B, W))
         subdomains_file = os.path.join(working_directory,
                                        'subdomains-sublist3r.txt')
-        targets |= set(find_subdomains(args.domain, subdomains_file))
-    else:
+        targets |= set(find_subdomains(args.domain, subdomains_file, subbrute))
+    elif 'ip' in args:
         print('%s[!] %sTarget: %s%s%s' % (B, W, Y, args.ip, W))
         targets.add(args.ip)
 
     print('%s[+] %sTarget discovery finished' % (G, W))
     print('%s[!] %sDetecting web sites' % (B, W))
-    for address in targets:
-        http_url = 'http://' + address
-        try:
-            response = requests.get(http_url, allow_redirects=False)
-        except requests.exceptions.ConnectionError:
-            continue
-        
-        if response.status_code == 301:
-            target_urls.add(response.headers['Location'])
-        elif response.status_code == 200:
-            target_urls.add(http_url)
 
-        https_url = 'https://' + address
-        try:
-            response = requests.get(https_url, allow_redirects=False)
-        except requests.exceptions.ConnectionError:
-            continue
-        
-        if response.status_code == 301:
-            target_urls.add(response.headers['Location'])
-        elif response.status_code == 200:
-            target_urls.add(https_url)
-
+    target_urls = find_web_pages(targets)
+    
     for i, url in enumerate(target_urls):
         if i == 0:
             print('%s[+] %sFound: %s%s%s' % (G, W, Y, url, W))
@@ -128,20 +106,11 @@ if __name__ == "__main__":
 
     print('%s[!] %sTaking screenshots of index pages' % (B, W))
 
-    url_file_pairs = []
+    screenshots_directory = os.path.join(working_directory, 'screenshots')
     
-    for url in target_urls:
-        output_file = os.path.join(working_directory,
-                                   'screenshot-' +
-                                   ''.join([i for i in url if i.isalpha()]) + '.png')
-        url_file_pairs.append((url, output_file))
-        
-    app = QApplication([])
-    s = Screenshot()
-    s.app = app    
-    s.capture(url_file_pairs)
-
-    app.exec_()
+    print('%s[!] %sScreenshots will be saved in %s%s%s' % (B, W, Y, screenshots_directory, W))
+    
+    make_screenshots(target_urls, screenshots_directory)
 
     print('%s[+] %sScreenshots saved' % (G, W))
 

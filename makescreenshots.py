@@ -1,8 +1,13 @@
+#!/usr/bin/env python3
 import sys
+import os
+import argparse
 
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt, QUrl, QTimer, QSize
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 import time
+from wreckhelpers import alphize
 
 
 class Screenshot(QWebEngineView):
@@ -31,3 +36,28 @@ class Screenshot(QWebEngineView):
         else:
             self.capture_one()
 
+
+def make_screenshots(urls, output_dir):
+    os.mkdir(output_dir)
+    
+    url_file_pairs = []
+    for url in urls:
+        url_file_pairs.append((url, os.path.join(output_dir, alphize(url) + '.png')))
+
+    app = QApplication([])
+    s = Screenshot()
+    s.app = app
+    s.capture(url_file_pairs)
+    app.exec_()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Make screenshots of web-pages')
+    parser.add_argument('--urls', dest='urls', required=True, help='File with urls to screenshot')
+    parser.add_argument('--output', dest='output', default='screenshots', help='Output directory')
+
+    args = parser.parse_args()
+    
+    with open(args.urls) as urls_file:
+        urls = [i.strip() for i in urls_file.readlines()]
+        make_screenshots(urls, args.output)

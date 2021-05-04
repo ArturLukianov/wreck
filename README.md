@@ -1,6 +1,6 @@
 # wreck
 
-wreck is a set of scripts dedicated to automated information gathering about targets for penetration testing
+wreck is a set of scripts dedicated to automate information gathering about targets for penetration testing
 
 wreck uses third-party tools to gather info and generates output in several formats
 
@@ -21,6 +21,9 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+### Full chain
+Run all tools chained together to get report from domain name
+
 
 Use wreck on domain and subdomains
 ```bash
@@ -33,3 +36,10 @@ python3 ./wreck.py --ip <ip>
 ```
 
 Output is saved under `./ouput-<date>/`
+
+### Tools
+#### makescreenshots.py
+Take screenshots of every url in file
+```bash
+python3 ./makescreenshots.py --urls <file with urls> --output <output directory>
+```
