@@ -38,6 +38,16 @@ python3 ./wreck.py --ip <ip>
 Output is saved under `./ouput-<date>/`
 
 ### Tools
+#### findsubdomains.py
+Find subdomains of domain (sublist3r)
+```bash
+python3 ./findsubdomains.py --domain <domain> --output <output file>
+```
+#### findwebpages.py
+Find HTTP and HTTPS web pages on standart ports of hosts from file
+```bash
+python3 ./findwebpages.py --hosts <hosts file> --output <output file>
+```
 #### makescreenshots.py
 Take screenshots of every url in file
 ```bash

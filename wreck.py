@@ -96,7 +96,7 @@ if __name__ == "__main__":
     print('%s[+] %sTarget discovery finished' % (G, W))
     print('%s[!] %sDetecting web sites' % (B, W))
 
-    target_urls = find_web_pages(targets)
+    target_urls = find_web_pages(targets, True)
     
     for i, url in enumerate(target_urls):
         if i == 0:
